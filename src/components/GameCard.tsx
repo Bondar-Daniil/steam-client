@@ -6,14 +6,23 @@ import { useDispatch, useSelector } from "react-redux";
 
 import type { Game } from "../types/game";
 import type { RootState } from "../store/store";
+
 import {
   addFavorite,
   removeFavorite,
 } from "../store/favoritesSlice";
 
+// ========================================
+// TYPES
+// ========================================
+
 interface GameCardProps {
   game: Game;
 }
+
+// ========================================
+// STYLES
+// ========================================
 
 const Card = styled.article`
   background: #1b2838;
@@ -34,7 +43,7 @@ const GameLink = styled(Link)`
   &:hover h3 {
     color: #66c0f4;
   }
-`; 
+`;
 
 const GameImage = styled.img`
   width: 100%;
@@ -72,7 +81,15 @@ const FavoriteButton = styled.button`
   }
 `;
 
+// ========================================
+// GAME CARD
+// ========================================
+
 function GameCard({ game }: GameCardProps) {
+  // --------------------------------------
+  // REDUX
+  // --------------------------------------
+
   const dispatch = useDispatch();
 
   const isFavorite = useSelector(
@@ -82,6 +99,10 @@ function GameCard({ game }: GameCardProps) {
       )
   );
 
+  // --------------------------------------
+  // HANDLERS
+  // --------------------------------------
+
   const handleFavorite = () => {
     if (isFavorite) {
       dispatch(removeFavorite(game.id));
@@ -90,38 +111,59 @@ function GameCard({ game }: GameCardProps) {
     }
   };
 
-  return (
-  <Card>
-    <GameLink
-  to={`/game/${game.id}`}
-  state={{ image: game.image }}
->
-      <GameImage
-        src={game.image || "https://placehold.co/460x215"}
-        alt={game.name}
-      />
-    </GameLink>
+  // --------------------------------------
+  // RENDER
+  // --------------------------------------
 
-    <Content>
+  return (
+    <Card>
+      {/* GAME IMAGE */}
+
       <GameLink
-  to={`/game/${game.id}`}
-  state={{ image: game.image }}
->
-        <GameTitle>{game.name}</GameTitle>
+        to={`/game/${game.id}`}
+        state={{ image: game.image }}
+      >
+        <GameImage
+          src={game.image || "https://placehold.co/460x215"}
+          alt={game.name}
+        />
       </GameLink>
 
-<Price>
-  {game.price === 0
-    ? "Free"
-    : game.price !== undefined
-      ? `$${game.price.toFixed(2)}`
-      : "Price unavailable"}
-</Price>
+      {/* GAME INFORMATION */}
 
-<p style={{ color: "#c7d5e0", fontSize: "14px" }}>
-  <strong>Release Date:</strong>{" "}
-  {game.releaseDate || "Not available"}
-</p>
+      <Content>
+        {/* GAME TITLE */}
+
+        <GameLink
+          to={`/game/${game.id}`}
+          state={{ image: game.image }}
+        >
+          <GameTitle>{game.name}</GameTitle>
+        </GameLink>
+
+        {/* GAME PRICE */}
+
+        <Price>
+          {game.price === 0
+            ? "Free"
+            : game.price !== undefined
+              ? `$${game.price.toFixed(2)}`
+              : "Price unavailable"}
+        </Price>
+
+        {/* RELEASE DATE */}
+
+        <p
+          style={{
+            color: "#c7d5e0",
+            fontSize: "14px",
+          }}
+        >
+          <strong>Release Date:</strong>{" "}
+          {game.releaseDate || "Not available"}
+        </p>
+
+        {/* FAVORITES BUTTON */}
 
         <FavoriteButton
           type="button"

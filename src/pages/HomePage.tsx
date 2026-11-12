@@ -1,8 +1,13 @@
 
 import { useEffect, useState } from "react";
 import styled from "styled-components";
+
 import GameCard from "../components/GameCard";
 import type { Game } from "../types/game";
+
+// ========================================
+// TYPES
+// ========================================
 
 type SortBy = "price" | "date";
 type SortOrder = "asc" | "desc";
@@ -12,6 +17,10 @@ type CatalogResponse = {
   currentPage: number;
   totalPages: number;
 };
+
+// ========================================
+// STYLES
+// ========================================
 
 const Grid = styled.div`
   display: grid;
@@ -82,20 +91,34 @@ const Pagination = styled.div`
   margin-top: 30px;
 `;
 
+// ========================================
+// HOME PAGE
+// ========================================
+
 function HomePage() {
+  // --------------------------------------
+  // STATE
+  // --------------------------------------
+
   const [query, setQuery] = useState("");
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const [mode, setMode] = useState<"catalog" | "search">("catalog");
+  const [mode, setMode] = useState<"catalog" | "search">(
+    "catalog"
+  );
+
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   const [sortBy, setSortBy] = useState<SortBy>("price");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
 
-  // Load catalog pages automatically
+  // --------------------------------------
+  // LOAD CATALOG
+  // --------------------------------------
+
   useEffect(() => {
     if (mode !== "catalog") return;
 
@@ -139,7 +162,10 @@ function HomePage() {
     return () => controller.abort();
   }, [mode, currentPage]);
 
-  // Search games by name
+  // --------------------------------------
+  // SEARCH GAMES
+  // --------------------------------------
+
   const handleSearch = async (
     event: React.FormEvent<HTMLFormElement>
   ) => {
@@ -156,7 +182,9 @@ function HomePage() {
 
     try {
       const response = await fetch(
-        `http://localhost:3001/api/games/search?q=${encodeURIComponent(searchTerm)}`
+        `http://localhost:3001/api/games/search?q=${encodeURIComponent(
+          searchTerm
+        )}`
       );
 
       if (!response.ok) {
@@ -164,6 +192,7 @@ function HomePage() {
       }
 
       const data: { games: Game[] } = await response.json();
+
       setGames(data.games);
     } catch (err) {
       console.error(err);
@@ -173,7 +202,10 @@ function HomePage() {
     }
   };
 
-  // Return to catalog
+  // --------------------------------------
+  // BACK TO CATALOG
+  // --------------------------------------
+
   const showCatalog = () => {
     setQuery("");
     setGames([]);
@@ -182,7 +214,10 @@ function HomePage() {
     setMode("catalog");
   };
 
-  // Sort the loaded games
+  // --------------------------------------
+  // SORT GAMES
+  // --------------------------------------
+
   const sortedGames = [...games].sort((a, b) => {
     let valueA: number | undefined;
     let valueB: number | undefined;
@@ -199,23 +234,39 @@ function HomePage() {
         ? Date.parse(b.releaseDate)
         : NaN;
 
-      valueA = Number.isNaN(dateA) ? undefined : dateA;
-      valueB = Number.isNaN(dateB) ? undefined : dateB;
+      valueA = Number.isNaN(dateA)
+        ? undefined
+        : dateA;
+
+      valueB = Number.isNaN(dateB)
+        ? undefined
+        : dateB;
     }
 
-    if (valueA === undefined && valueB === undefined) return 0;
+    if (valueA === undefined && valueB === undefined) {
+      return 0;
+    }
+
     if (valueA === undefined) return 1;
     if (valueB === undefined) return -1;
 
     const comparison = valueA - valueB;
 
-    return sortOrder === "asc" ? comparison : -comparison;
+    return sortOrder === "asc"
+      ? comparison
+      : -comparison;
   });
+
+  // --------------------------------------
+  // RENDER
+  // --------------------------------------
 
   return (
     <div>
       <h1>Game Store</h1>
       <p>Discover your favorite Steam games!</p>
+
+      {/* SEARCH */}
 
       <SearchForm onSubmit={handleSearch}>
         <SearchInput
@@ -230,6 +281,8 @@ function HomePage() {
         </Button>
       </SearchForm>
 
+      {/* BACK TO CATALOG */}
+
       {mode === "search" && (
         <Controls>
           <Button type="button" onClick={showCatalog}>
@@ -237,6 +290,8 @@ function HomePage() {
           </Button>
         </Controls>
       )}
+
+      {/* SORTING */}
 
       {games.length > 0 && (
         <Controls>
@@ -258,16 +313,13 @@ function HomePage() {
               setSortOrder(event.target.value as SortOrder)
             }
           >
-            <option value="asc">
-  {sortBy === "date" ? "Oldest First" : "Lowest Price First"}
-</option>
-
-<option value="desc">
-  {sortBy === "date" ? "Newest First" : "Highest Price First"}
-</option>
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
           </Select>
         </Controls>
       )}
+
+      {/* STATUS MESSAGES */}
 
       {loading && <p>Loading games...</p>}
 
@@ -277,6 +329,8 @@ function HomePage() {
         <p>No games found.</p>
       )}
 
+      {/* GAME LIST */}
+
       {!loading && !error && (
         <>
           <Grid>
@@ -284,6 +338,8 @@ function HomePage() {
               <GameCard key={game.id} game={game} />
             ))}
           </Grid>
+
+          {/* PAGINATION */}
 
           {mode === "catalog" && totalPages > 1 && (
             <Pagination>
